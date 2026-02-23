@@ -90,7 +90,7 @@ jobs:
             target-repo \
             "$PROFILE" \
             "$TARGET_BOOT" \
-            "$PWD/central-migration-control-plane" \
+            "$GITHUB_WORKSPACE" \
             "target-repo/.github/rewrite/analysis.json"
 
       - name: Create migration PR with code changes

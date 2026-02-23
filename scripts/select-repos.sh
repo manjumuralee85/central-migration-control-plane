@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG_FILE="${1:-central-migration-control-plane/config/repos.json}"
+CONFIG_FILE="${1:-./config/repos.json}"
 TARGET_REPO="${2:-}"
 
 python3 - "$CONFIG_FILE" "$TARGET_REPO" << 'PY'
