@@ -44,6 +44,9 @@ Edit `config/repos.json`:
 }
 ```
 
+You can add more repos as additional objects in the same array.
+`migration_profile` is optional if auto-detection can identify the app; otherwise set it explicitly.
+
 ## How to use
 
 1. Create a dedicated repo, e.g. `org/migration-control-plane`.
@@ -59,3 +62,4 @@ Edit `config/repos.json`:
 - Adding a new repo is only a config change in `config/repos.json`.
 - The workflow executes centralized OpenRewrite recipe `com.organization.migrations.Java21SpringBootBaseline` from `.github/rewrite/migration-recipe.yml`.
 - Migration logic per app family is defined by `migration_profile` and implemented in `scripts/migrate-repo.sh`.
+- Auto-detection is implemented in `scripts/detect-profile.sh`. If detection returns unsupported, add a specific `migration_profile` and corresponding migration logic.
