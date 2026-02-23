@@ -41,7 +41,7 @@ jobs:
           set -euo pipefail
           if [ -f "pom.xml" ] && [ -f ".github/rewrite/migration-recipe.yml" ]; then
             mvn -B -ntp -U org.openrewrite.maven:rewrite-maven-plugin:6.29.0:run \
-              -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:3.30.0,org.openrewrite.recipe:rewrite-spring:6.30.0 \
+              -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:3.27.0,org.openrewrite.recipe:rewrite-spring:6.24.0 \
               -Drewrite.activeRecipes=com.organization.migrations.Java21SpringBootBaseline \
               -Drewrite.configLocation=.github/rewrite/migration-recipe.yml
           else
