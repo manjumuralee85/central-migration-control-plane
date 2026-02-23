@@ -4,6 +4,13 @@ displayName: Java 21 and Spring Boot baseline migration recipe
 description: Centralized baseline recipe applied across target repositories.
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1
+  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-dependencies
+      newVersion: 3.3.x
+      overrideManagedVersion: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: com.mysql
       artifactId: mysql-connector-j
@@ -13,11 +20,6 @@ recipeList:
       groupId: org.postgresql
       artifactId: postgresql
       newVersion: 42.7.x
-      overrideManagedVersion: true
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.hibernate.orm
-      artifactId: hibernate-core
-      newVersion: 7.2.x
       overrideManagedVersion: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.hibernate.validator

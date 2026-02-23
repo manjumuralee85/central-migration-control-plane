@@ -11,4 +11,9 @@ if [[ -f "pom.xml" ]] && rg -q "springframework\.samples\.petclinic|Spring Frame
   exit 0
 fi
 
+if [[ -f "pom.xml" || -f "build.gradle" || -f "build.gradle.kts" ]]; then
+  echo "generic-java-service"
+  exit 0
+fi
+
 echo "unsupported"

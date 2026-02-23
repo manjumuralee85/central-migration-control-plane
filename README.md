@@ -7,13 +7,14 @@ This folder is a template for a dedicated central repository that can orchestrat
 - Reads repositories from `config/repos.json`
 - Mode `direct_migrate`:
   - Checks out each target repo directly from central workflow
-  - Applies migration profile code/pom/properties changes
-  - Runs build/tests/CVE scan
+  - Detects current Java/framework/dependency versions (Spring Boot, Dropwizard, Jakarta, Log4j, etc.)
+  - Generates repository-specific OpenRewrite recipe config
+  - Applies migration profile patches plus OpenRewrite code/dependency upgrades
+  - Runs build/tests
   - Creates PR in target repo with actual code changes
 - Mode `sync_templates`:
   - Opens PRs in target repos with:
     - `.github/workflows/convert-to-spring-boot.yml`
-    - `.github/dependency-check-suppressions.xml`
     - `.github/rewrite/migration-recipe.yml`
 - Mode `trigger_migration`:
   - Dispatches `convert-to-spring-boot.yml` in each target repo
@@ -39,12 +40,19 @@ Edit `config/repos.json`:
       "migration_profile": "spring-petclinic",
       "java_version": "21",
       "spring_boot_version": "3.3.6"
+    },
+    {
+      "repo_url": "https://github.com/your-org/another-service.git",
+      "default_branch": "main",
+      "enabled": true,
+      "spring_boot_version": "3.3.6"
     }
   ]
 }
 ```
 
 You can add more repos as additional objects in the same array.
+`repo` (owner/name) is recommended; full GitHub URL is also supported via `repo_url` (or `github_url`).
 `migration_profile` is optional if auto-detection can identify the app; otherwise set it explicitly.
 
 ## How to use
@@ -60,6 +68,7 @@ You can add more repos as additional objects in the same array.
 
 - Keep `templates/convert-to-spring-boot.yml` and `templates/migration-recipe.yml` as centralized sources.
 - Adding a new repo is only a config change in `config/repos.json`.
-- The workflow executes centralized OpenRewrite recipe `com.organization.migrations.Java21SpringBootBaseline` from `.github/rewrite/migration-recipe.yml`.
+- The central workflow now generates `.github/rewrite/migration-recipe.yml` per target repository using `scripts/analyze-repo.sh` + `scripts/generate-recipe.sh`.
+- The generated recipe includes Java 21 upgrade plus Spring Boot 3.1+ / Jakarta / common dependency updates when detected.
 - Migration logic per app family is defined by `migration_profile` and implemented in `scripts/migrate-repo.sh`.
 - Auto-detection is implemented in `scripts/detect-profile.sh`. If detection returns unsupported, add a specific `migration_profile` and corresponding migration logic.

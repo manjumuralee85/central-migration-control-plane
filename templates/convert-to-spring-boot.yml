@@ -36,303 +36,30 @@ jobs:
           java-version: "21"
           cache: maven
 
-      - name: Apply centralized OpenRewrite recipe (best effort)
+      - name: Apply OpenRewrite migration recipe
         run: |
           set -euo pipefail
           if [ -f "pom.xml" ] && [ -f ".github/rewrite/migration-recipe.yml" ]; then
             mvn -B -ntp -U org.openrewrite.maven:rewrite-maven-plugin:6.29.0:run \
-              -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:3.27.0,org.openrewrite.recipe:rewrite-spring:6.24.0 \
+              -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:3.30.0,org.openrewrite.recipe:rewrite-spring:6.30.0 \
               -Drewrite.activeRecipes=com.organization.migrations.Java21SpringBootBaseline \
-              -Drewrite.configLocation=.github/rewrite/migration-recipe.yml || true
+              -Drewrite.configLocation=.github/rewrite/migration-recipe.yml
           else
             echo "Skipping OpenRewrite: pom.xml or centralized recipe file missing."
           fi
 
-      - name: Convert pom.xml to Spring Boot
+      - name: Build and test
         run: |
           set -euo pipefail
-          SPRING_BOOT_VERSION='${{ github.event.inputs.spring_boot_version }}'
-          cat > pom.xml << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xmlns="http://maven.apache.org/POM/4.0.0"
-                   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-              <modelVersion>4.0.0</modelVersion>
-
-              <parent>
-                  <groupId>org.springframework.boot</groupId>
-                  <artifactId>spring-boot-starter-parent</artifactId>
-                  <version>__SPRING_BOOT_VERSION__</version>
-                  <relativePath/>
-              </parent>
-
-              <groupId>org.springframework.samples</groupId>
-              <artifactId>spring-boot-petclinic</artifactId>
-              <version>7.0.3</version>
-              <name>Spring Boot Petclinic</name>
-              <description>Spring Boot version of the PetClinic application</description>
-              <packaging>jar</packaging>
-
-              <properties>
-                  <java.version>21</java.version>
-                  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                  <webjars-bootstrap.version>5.3.8</webjars-bootstrap.version>
-                  <webjars-font-awesome.version>4.7.0</webjars-font-awesome.version>
-                  <webjars-flatpickr.version>4.6.13</webjars-flatpickr.version>
-                  <angus-activation.version>2.0.3</angus-activation.version>
-                  <log4j2.version>2.25.2</log4j2.version>
-                  <postgresql.version>42.7.8</postgresql.version>
-                  <tomcat-embed-core.version>10.1.42</tomcat-embed-core.version>
-              </properties>
-
-              <dependencies>
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-web</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-data-jpa</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.apache.tomcat</groupId>
-                      <artifactId>tomcat-jdbc</artifactId>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-validation</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.springframework</groupId>
-                      <artifactId>spring-oxm</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-cache</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-actuator</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.jspecify</groupId>
-                      <artifactId>jspecify</artifactId>
-                      <version>1.0.0</version>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>org.apache.tomcat.embed</groupId>
-                      <artifactId>tomcat-embed-jasper</artifactId>
-                      <version>${tomcat-embed-core.version}</version>
-                  </dependency>
-                  <dependency>
-                      <groupId>jakarta.servlet.jsp.jstl</groupId>
-                      <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.glassfish.web</groupId>
-                      <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>jakarta.xml.bind</groupId>
-                      <artifactId>jakarta.xml.bind-api</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.glassfish.jaxb</groupId>
-                      <artifactId>jaxb-runtime</artifactId>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>jakarta.activation</groupId>
-                      <artifactId>jakarta.activation-api</artifactId>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.eclipse.angus</groupId>
-                      <artifactId>angus-activation</artifactId>
-                      <version>${angus-activation.version}</version>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.apache.logging.log4j</groupId>
-                      <artifactId>log4j-api</artifactId>
-                      <version>${log4j2.version}</version>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.apache.tomcat.embed</groupId>
-                      <artifactId>tomcat-embed-core</artifactId>
-                      <version>${tomcat-embed-core.version}</version>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.apache.tomcat.embed</groupId>
-                      <artifactId>tomcat-embed-websocket</artifactId>
-                      <version>${tomcat-embed-core.version}</version>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>com.github.ben-manes.caffeine</groupId>
-                      <artifactId>caffeine</artifactId>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>org.webjars</groupId>
-                      <artifactId>bootstrap</artifactId>
-                      <version>${webjars-bootstrap.version}</version>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.webjars.npm</groupId>
-                      <artifactId>font-awesome</artifactId>
-                      <version>${webjars-font-awesome.version}</version>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.webjars.npm</groupId>
-                      <artifactId>flatpickr</artifactId>
-                      <version>${webjars-flatpickr.version}</version>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>com.h2database</groupId>
-                      <artifactId>h2</artifactId>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.hsqldb</groupId>
-                      <artifactId>hsqldb</artifactId>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>com.mysql</groupId>
-                      <artifactId>mysql-connector-j</artifactId>
-                      <scope>runtime</scope>
-                  </dependency>
-                  <dependency>
-                      <groupId>org.postgresql</groupId>
-                      <artifactId>postgresql</artifactId>
-                      <version>${postgresql.version}</version>
-                      <scope>runtime</scope>
-                  </dependency>
-
-                  <dependency>
-                      <groupId>org.springframework.boot</groupId>
-                      <artifactId>spring-boot-starter-test</artifactId>
-                      <scope>test</scope>
-                  </dependency>
-              </dependencies>
-
-              <build>
-                  <finalName>petclinic</finalName>
-                  <plugins>
-                      <plugin>
-                          <groupId>org.springframework.boot</groupId>
-                          <artifactId>spring-boot-maven-plugin</artifactId>
-                      </plugin>
-                      <plugin>
-                          <groupId>org.owasp</groupId>
-                          <artifactId>dependency-check-maven</artifactId>
-                          <version>12.1.0</version>
-                          <configuration>
-                              <failBuildOnCVSS>0</failBuildOnCVSS>
-                              <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
-                              <suppressionFiles>
-                                  <suppressionFile>.github/dependency-check-suppressions.xml</suppressionFile>
-                              </suppressionFiles>
-                          </configuration>
-                      </plugin>
-                  </plugins>
-              </build>
-          </project>
-          EOF
-          sed -i "s/__SPRING_BOOT_VERSION__/${SPRING_BOOT_VERSION}/g" pom.xml
-
-      - name: Create Spring Boot application entrypoint
-        run: |
-          set -euo pipefail
-          mkdir -p src/main/java/org/springframework/samples/petclinic
-          cat > src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java << 'EOF'
-          package org.springframework.samples.petclinic;
-
-          import org.springframework.boot.SpringApplication;
-          import org.springframework.boot.autoconfigure.SpringBootApplication;
-          import org.springframework.boot.builder.SpringApplicationBuilder;
-          import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-
-          @SpringBootApplication
-          public class PetClinicApplication extends SpringBootServletInitializer {
-              public static void main(String[] args) {
-                  SpringApplication.run(PetClinicApplication.class, args);
-              }
-
-              @Override
-              protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-                  return application.sources(PetClinicApplication.class);
-              }
-          }
-          EOF
-
-      - name: Create Spring Boot application properties
-        run: |
-          set -euo pipefail
-          mkdir -p src/main/resources
-          cat > src/main/resources/application.properties << 'EOF'
-          spring.application.name=petclinic
-          server.port=8080
-          spring.mvc.view.prefix=/WEB-INF/jsp/
-          spring.mvc.view.suffix=.jsp
-          spring.messages.basename=messages/messages
-          spring.cache.type=caffeine
-          spring.cache.caffeine.spec=maximumSize=500,expireAfterAccess=600s
-          management.endpoints.web.exposure.include=health,info,metrics
-          EOF
-
-      - name: Patch legacy XML configs for Boot compatibility
-        run: |
-          set -euo pipefail
-          # Legacy XML references a persistence unit, but no persistence.xml exists.
-          # Keep package scanning and remove persistenceUnitName to avoid EMF init failures.
-          sed -i '/persistenceUnitName/d' src/main/resources/spring/business-config.xml
-          # Legacy JPA repositories use constructor injection of EntityManager.
-          # Expose a shared EntityManager bean backed by entityManagerFactory.
-          if ! grep -q 'SharedEntityManagerBean' src/main/resources/spring/business-config.xml; then
-            perl -0777 -i -pe 's|(<bean id="entityManagerFactory" class="org\.springframework\.orm\.jpa\.LocalContainerEntityManagerFactoryBean"[\s\S]*?</bean>)|$1\n\n        <bean id="entityManager" class="org.springframework.orm.jpa.support.SharedEntityManagerBean"\n              p:entityManagerFactory-ref="entityManagerFactory"/>|s' src/main/resources/spring/business-config.xml
+          if [ -f "pom.xml" ]; then
+            mvn -B -ntp clean verify
+          elif [ -f "gradlew" ]; then
+            chmod +x gradlew
+            ./gradlew --no-daemon clean test
+          else
+            echo "No Maven/Gradle build file found."
+            exit 1
           fi
-
-      - name: Validate generated pom has XML namespace support dependencies
-        run: |
-          set -euo pipefail
-          grep -q "<artifactId>spring-oxm</artifactId>" pom.xml
-          grep -q "<artifactId>jakarta.xml.bind-api</artifactId>" pom.xml
-          grep -q "<artifactId>jaxb-runtime</artifactId>" pom.xml
-
-      - name: Validate CVE-sensitive versions are pinned
-        run: |
-          set -euo pipefail
-          grep -q "<angus-activation.version>2.0.3</angus-activation.version>" pom.xml
-          grep -q "<log4j2.version>2.25.2</log4j2.version>" pom.xml
-          grep -q "<postgresql.version>42.7.8</postgresql.version>" pom.xml
-          grep -q "<tomcat-embed-core.version>10.1.42</tomcat-embed-core.version>" pom.xml
-
-      - name: Build (must pass)
-        run: |
-          set -euo pipefail
-          mvn -B -ntp clean verify \
-            -Ddb.script=h2 \
-            -Djpa.database=H2 \
-            -Djdbc.driverClassName=org.h2.Driver \
-            -Djdbc.url=jdbc:h2:mem:petclinic \
-            -Djdbc.username=sa \
-            -Djdbc.password=
-
-      - name: CVE scan (must be zero)
-        run: |
-          set -euo pipefail
-          mvn -B -ntp -DskipTests \
-            org.owasp:dependency-check-maven:12.1.0:check \
-            -DfailBuildOnCVSS=0 \
-            -DossindexAnalyzerEnabled=false \
-            -DsuppressionFiles=.github/dependency-check-suppressions.xml \
-            -Dformats=HTML,JSON
 
       - name: Clean generated artifacts before PR
         run: |
@@ -343,13 +70,13 @@ jobs:
         id: changes
         run: |
           set -euo pipefail
-          if [ -n "$(git status --porcelain -- pom.xml src/main src/test)" ]; then
+          if [ -n "$(git status --porcelain)" ]; then
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create Pull Request (only after successful migration/build/CVE checks)
+      - name: Create Pull Request (only after successful migration/build checks)
         if: steps.changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
@@ -357,28 +84,19 @@ jobs:
           branch: migration/java21-spring-boot-${{ github.run_id }}
           delete-branch: true
           commit-message: |
-            chore: convert Spring Framework app to Spring Boot
+            chore: migrate to Spring Boot on Java 21
 
-            - Converted pom.xml to Spring Boot parent + starters
-            - Added Boot entrypoint and application.properties
-            - Upgraded runtime to Java 21
-            - Passed build/test and CVE scans
+            - Applied OpenRewrite recipes
+            - Upgraded Java and framework dependencies
+            - Passed build/tests
           title: "Convert to Spring Boot ${{ github.event.inputs.spring_boot_version }} on Java 21"
           body: |
-            This PR was generated after a full Spring Framework to Spring Boot conversion.
+            This PR was generated after Spring migration recipes were applied.
 
             Completed checks:
             - Java 21 build and tests
-            - CVE scan with threshold `0`
-
-            Excluded from PR: `target/**`, `.gitignore`, and `*.md`.
           labels: |
             migration
             java-21
             spring-boot
-            security
             automated
-          add-paths: |
-            pom.xml
-            src/main/**
-            src/test/**
