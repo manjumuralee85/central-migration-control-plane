@@ -1,0 +1,12 @@
+{
+  "repositories": [
+    {
+      "repo": "manjumuralee85/spring-petclinic",
+      "default_branch": "main",
+      "enabled": true,
+      "migration_profile": "spring-petclinic",
+      "java_version": "21",
+      "spring_boot_version": "3.3.6"
+    }
+  ]
+}

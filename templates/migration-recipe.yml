@@ -1,0 +1,46 @@
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.migrations.Java21SpringBootBaseline
+displayName: Java 21 and Spring Boot baseline migration recipe
+description: Centralized baseline recipe applied across target repositories.
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava21
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: com.mysql
+      artifactId: mysql-connector-j
+      newVersion: 8.4.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.postgresql
+      artifactId: postgresql
+      newVersion: 42.7.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.hibernate.orm
+      artifactId: hibernate-core
+      newVersion: 7.2.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.hibernate.validator
+      artifactId: hibernate-validator
+      newVersion: latest.release
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.eclipse.angus
+      artifactId: angus-activation
+      newVersion: latest.release
+      overrideManagedVersion: true
+  - org.openrewrite.maven.AddDependency:
+      groupId: org.eclipse.angus
+      artifactId: angus-activation
+      version: latest.release
+      scope: runtime
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: ch.qos.logback
+      artifactId: logback-classic
+      newVersion: 1.5.x
+      overrideManagedVersion: true
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: bootstrap
+      newVersion: 5.3.x
+      overrideManagedVersion: true

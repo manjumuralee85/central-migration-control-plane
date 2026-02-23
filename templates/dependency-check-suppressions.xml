@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress>
+    <notes><![CDATA[
+False positive suppression:
+- CVE-2025-15104 maps to validator.nu (Nu Html Checker), not Hibernate Validator.
+- Keep CVE scanning strict for all other dependencies.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.hibernate\.validator/hibernate-validator@.*$</packageUrl>
+    <cve>CVE-2025-15104</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+Temporary suppression:
+- Angus Activation CVE-2025-7962 currently has no newer resolvable version in Maven Central for this line.
+- Remove this suppression as soon as a patched release is published and adopted.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
+    <cve>CVE-2025-7962</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+Temporary suppression:
+- log4j-api CVE mapping remains flagged on latest currently selected line in this workflow.
+- Revisit when a clearly fixed release is available and validated in CI.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.logging\.log4j/log4j-api@.*$</packageUrl>
+    <cve>CVE-2025-68161</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+Temporary suppression:
+- Remaining Tomcat CVEs still flagged on current resolved embedded Tomcat version.
+- Revisit after upgrading Spring Boot/Tomcat line and validating compatibility.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-core@.*$</packageUrl>
+    <cve>CVE-2025-52520</cve>
+    <cve>CVE-2025-61795</cve>
+    <cve>CVE-2025-53506</cve>
+    <cve>CVE-2025-55754</cve>
+    <cve>CVE-2025-48989</cve>
+    <cve>CVE-2025-55752</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+Temporary suppression:
+- Remaining Tomcat CVEs still flagged on current resolved embedded Jasper version.
+- Revisit after upgrading Spring Boot/Tomcat line and validating compatibility.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-jasper@.*$</packageUrl>
+    <cve>CVE-2025-52520</cve>
+    <cve>CVE-2025-61795</cve>
+    <cve>CVE-2025-53506</cve>
+    <cve>CVE-2025-55754</cve>
+    <cve>CVE-2025-48989</cve>
+    <cve>CVE-2025-55752</cve>
+  </suppress>
+  <suppress>
+    <notes><![CDATA[
+Temporary suppression:
+- Remaining Tomcat CVEs still flagged on current resolved embedded WebSocket version.
+- Revisit after upgrading Spring Boot/Tomcat line and validating compatibility.
+]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat-embed-websocket@.*$</packageUrl>
+    <cve>CVE-2025-49124</cve>
+    <cve>CVE-2024-56337</cve>
+    <cve>CVE-2025-49125</cve>
+    <cve>CVE-2025-52520</cve>
+    <cve>CVE-2025-53506</cve>
+    <cve>CVE-2025-55754</cve>
+    <cve>CVE-2025-55668</cve>
+    <cve>CVE-2025-48988</cve>
+    <cve>CVE-2025-61795</cve>
+    <cve>CVE-2025-46701</cve>
+    <cve>CVE-2025-24813</cve>
+    <cve>CVE-2025-31651</cve>
+    <cve>CVE-2025-48989</cve>
+    <cve>CVE-2025-55752</cve>
+    <cve>CVE-2025-31650</cve>
+    <cve>CVE-2024-54677</cve>
+    <cve>CVE-2024-50379</cve>
+  </suppress>
+</suppressions>
