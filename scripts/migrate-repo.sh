@@ -24,6 +24,10 @@ fi
 if [[ "$PROFILE" == "spring-petclinic" ]]; then
   mkdir -p src/main/resources src/main/java/org/springframework/samples/petclinic
 
+  # For legacy spring-petclinic, convert pom to known Boot-compatible baseline first.
+  cp "$CONTROL_PLANE_DIR/templates/repo-patches/spring-petclinic/pom.xml" pom.xml
+  sed -i "s/__SPRING_BOOT_VERSION__/${SPRING_BOOT_VERSION}/g" pom.xml
+
   if [[ ! -f "src/main/resources/application.properties" ]]; then
     cp "$CONTROL_PLANE_DIR/templates/repo-patches/spring-petclinic/src/main/resources/application.properties" src/main/resources/application.properties
   fi
