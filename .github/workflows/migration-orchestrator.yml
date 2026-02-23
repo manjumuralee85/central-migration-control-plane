@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           TARGET_REPO='${{ github.event.inputs.target_repo }}'
-          MATRIX_JSON=$(./central-migration-control-plane/scripts/select-repos.sh central-migration-control-plane/config/repos.json "$TARGET_REPO")
+          MATRIX_JSON=$(./scripts/select-repos.sh ./config/repos.json "$TARGET_REPO")
           echo "matrix=$MATRIX_JSON" >> "$GITHUB_OUTPUT"
           echo "$MATRIX_JSON"
 
@@ -73,7 +73,7 @@ jobs:
           TARGET_BOOT='${{ github.event.inputs.spring_boot_version || matrix.spring_boot_version }}'
           PROFILE='${{ matrix.migration_profile }}'
           if [[ -z "$PROFILE" || "$PROFILE" == "null" ]]; then
-            PROFILE=$(./central-migration-control-plane/scripts/detect-profile.sh target-repo)
+            PROFILE=$(./scripts/detect-profile.sh target-repo)
           fi
           if [[ "$PROFILE" == "unsupported" ]]; then
             echo "No supported migration profile detected for ${{ matrix.repo }}. Set migration_profile explicitly."
@@ -81,12 +81,12 @@ jobs:
           fi
           echo "profile_used=$PROFILE" >> "$GITHUB_OUTPUT"
           mkdir -p target-repo/.github/rewrite
-          ./central-migration-control-plane/scripts/analyze-repo.sh target-repo > target-repo/.github/rewrite/analysis.json
-          ./central-migration-control-plane/scripts/generate-recipe.sh \
+          ./scripts/analyze-repo.sh target-repo > target-repo/.github/rewrite/analysis.json
+          ./scripts/generate-recipe.sh \
             target-repo/.github/rewrite/analysis.json \
             "$TARGET_BOOT" \
             target-repo/.github/rewrite/migration-recipe.yml
-          ./central-migration-control-plane/scripts/migrate-repo.sh \
+          ./scripts/migrate-repo.sh \
             target-repo \
             "$PROFILE" \
             "$TARGET_BOOT" \
@@ -138,8 +138,8 @@ jobs:
           set -euo pipefail
           mkdir -p target-repo/.github/workflows
           mkdir -p target-repo/.github/rewrite
-          cp central-migration-control-plane/templates/convert-to-spring-boot.yml target-repo/.github/workflows/convert-to-spring-boot.yml
-          cp central-migration-control-plane/templates/migration-recipe.yml target-repo/.github/rewrite/migration-recipe.yml
+          cp ./templates/convert-to-spring-boot.yml target-repo/.github/workflows/convert-to-spring-boot.yml
+          cp ./templates/migration-recipe.yml target-repo/.github/rewrite/migration-recipe.yml
 
       - name: Create pull request to sync migration templates
         if: ${{ github.event.inputs.mode == 'sync_templates' }}
