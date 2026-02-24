@@ -149,7 +149,6 @@ jobs:
             pom.xml
             src/main/**
             src/test/**
-            .github/rewrite/migration-recipe.yml
 
       - name: Sync migration templates to target repository
         if: ${{ github.event.inputs.mode == 'sync_templates' }}

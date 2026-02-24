@@ -22,7 +22,7 @@ else
 fi
 
 if [[ "$PROFILE" == "spring-petclinic" ]]; then
-  mkdir -p src/main/resources src/main/java/org/springframework/samples/petclinic
+  mkdir -p src/main/resources src/main/java/org/springframework/samples/petclinic src/main/java/org/springframework/samples/petclinic/config
 
   # For legacy spring-petclinic, convert pom to known Boot-compatible baseline first.
   cp "$CONTROL_PLANE_DIR/templates/repo-patches/spring-petclinic/pom.xml" pom.xml
@@ -34,6 +34,26 @@ if [[ "$PROFILE" == "spring-petclinic" ]]; then
 
   if [[ ! -f "src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java" ]]; then
     cp "$CONTROL_PLANE_DIR/templates/repo-patches/spring-petclinic/src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java" src/main/java/org/springframework/samples/petclinic/PetClinicApplication.java
+  fi
+
+  if [[ ! -f "src/main/java/org/springframework/samples/petclinic/config/LegacyJpaEntityManagerConfig.java" ]]; then
+    cat > src/main/java/org/springframework/samples/petclinic/config/LegacyJpaEntityManagerConfig.java << 'EOF'
+package org.springframework.samples.petclinic.config;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
+
+@Configuration
+public class LegacyJpaEntityManagerConfig {
+    @Bean
+    EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
+        return SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
+    }
+}
+EOF
   fi
 
   if [[ -f src/main/resources/spring/business-config.xml ]]; then
