@@ -101,6 +101,13 @@ jobs:
             "$GITHUB_WORKSPACE" \
             "target-repo/.github/rewrite/analysis.json"
 
+      - name: Ensure generated build artifacts are not committed
+        if: ${{ github.event.inputs.mode == 'direct_migrate' }}
+        run: |
+          set -euo pipefail
+          find target-repo -type d \( -name target -o -name .rewrite \) -prune -exec rm -rf {} +
+          find target-repo -type f -name "*.class" -delete
+
       - name: Create migration PR with code changes
         if: ${{ github.event.inputs.mode == 'direct_migrate' }}
         uses: peter-evans/create-pull-request@v6
@@ -130,6 +137,22 @@ jobs:
             automation
             java-21
             spring-boot
+          add-paths: |
+            pom.xml
+            **/pom.xml
+            build.gradle
+            **/build.gradle
+            build.gradle.kts
+            **/build.gradle.kts
+            settings.gradle
+            **/settings.gradle
+            settings.gradle.kts
+            **/settings.gradle.kts
+            gradle.properties
+            **/gradle.properties
+            src/**
+            **/src/**
+            .github/rewrite/migration-recipe.yml
 
       - name: Sync migration templates to target repository
         if: ${{ github.event.inputs.mode == 'sync_templates' }}
