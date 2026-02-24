@@ -53,6 +53,14 @@ if [[ "$PROFILE" == "spring-petclinic" ]]; then
     sed -i 's|^jpa.showSql=.*|jpa.showSql=false|' src/main/resources/spring/data-access.properties
     sed -i 's|^db\\.init\\.mode=.*|db.init.mode=always|' src/main/resources/spring/data-access.properties
     sed -i 's|^db\\.script=.*|db.script=h2|' src/main/resources/spring/data-access.properties
+
+    # Guarantee keys exist even if source file format differs.
+    grep -q '^jdbc.driverClassName=' src/main/resources/spring/data-access.properties || echo 'jdbc.driverClassName=org.h2.Driver' >> src/main/resources/spring/data-access.properties
+    grep -q '^jdbc.url=' src/main/resources/spring/data-access.properties || echo 'jdbc.url=jdbc:h2:mem:petclinic;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE' >> src/main/resources/spring/data-access.properties
+    grep -q '^jdbc.username=' src/main/resources/spring/data-access.properties || echo 'jdbc.username=sa' >> src/main/resources/spring/data-access.properties
+    grep -q '^jdbc.password=' src/main/resources/spring/data-access.properties || echo 'jdbc.password=' >> src/main/resources/spring/data-access.properties
+    grep -q '^jpa.database=' src/main/resources/spring/data-access.properties || echo 'jpa.database=H2' >> src/main/resources/spring/data-access.properties
+    grep -q '^db.script=' src/main/resources/spring/data-access.properties || echo 'db.script=h2' >> src/main/resources/spring/data-access.properties
   fi
 fi
 
