@@ -42,9 +42,21 @@ if [[ "$PROFILE" == "spring-petclinic" ]]; then
       perl -0777 -i -pe 's|(<bean id="entityManagerFactory" class="org\.springframework\.orm\.jpa\.LocalContainerEntityManagerFactoryBean"[\s\S]*?</bean>)|$1\n\n        <bean id="entityManager" class="org.springframework.orm.jpa.support.SharedEntityManagerBean"\n              p:entityManagerFactory-ref="entityManagerFactory"/>|s' src/main/resources/spring/business-config.xml
     fi
   fi
+
+  # Ensure legacy placeholder properties are concrete for CI test execution.
+  if [[ -f src/main/resources/spring/data-access.properties ]]; then
+    sed -i 's|^jdbc.driverClassName=.*|jdbc.driverClassName=org.h2.Driver|' src/main/resources/spring/data-access.properties
+    sed -i 's|^jdbc.url=.*|jdbc.url=jdbc:h2:mem:petclinic;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE|' src/main/resources/spring/data-access.properties
+    sed -i 's|^jdbc.username=.*|jdbc.username=sa|' src/main/resources/spring/data-access.properties
+    sed -i 's|^jdbc.password=.*|jdbc.password=|' src/main/resources/spring/data-access.properties
+    sed -i 's|^jpa.database=.*|jpa.database=H2|' src/main/resources/spring/data-access.properties
+    sed -i 's|^jpa.showSql=.*|jpa.showSql=false|' src/main/resources/spring/data-access.properties
+    sed -i 's|^db\\.init\\.mode=.*|db.init.mode=always|' src/main/resources/spring/data-access.properties
+    sed -i 's|^db\\.script=.*|db.script=h2|' src/main/resources/spring/data-access.properties
+  fi
 fi
 
-rm -rf target .rewrite rewrite.patch || true
+rm -rf .rewrite rewrite.patch || true
 
 if [[ -f "pom.xml" ]]; then
   mvn -B -ntp -U org.openrewrite.maven:rewrite-maven-plugin:6.29.0:run \
@@ -72,4 +84,4 @@ else
   echo "No pom.xml or gradlew found; skipping build/test."
 fi
 
-rm -rf target .rewrite rewrite.patch || true
+rm -rf .rewrite rewrite.patch || true

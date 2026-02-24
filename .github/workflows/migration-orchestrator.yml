@@ -112,6 +112,7 @@ jobs:
 
           # Remove transient generated files that should never be part of PRs.
           rm -rf target-repo/target target-repo/.rewrite
+          git -C target-repo clean -fd -- target .rewrite || true
           rm -f target-repo/.github/rewrite/analysis.json
           find target-repo -type f -name "*.class" -delete
 
