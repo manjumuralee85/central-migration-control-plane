@@ -63,6 +63,28 @@ EOF
     fi
   fi
 
+  patch_jpa_repo() {
+    local file="$1"
+    if [[ ! -f "$file" ]]; then
+      return 0
+    fi
+
+    # Ensure PersistenceContext import is present.
+    if ! grep -q 'import jakarta.persistence.PersistenceContext;' "$file"; then
+      perl -i -pe 's|import jakarta.persistence.EntityManager;\n|import jakarta.persistence.EntityManager;\nimport jakarta.persistence.PersistenceContext;\n|g' "$file"
+    fi
+
+    # Convert constructor injection to field injection for EntityManager.
+    perl -0777 -i -pe 's/private final EntityManager entityManager;\s*public [A-Za-z0-9_]+\s*\(\s*EntityManager entityManager\s*\)\s*\{\s*this\.entityManager = entityManager;\s*\}/\@PersistenceContext\n    private EntityManager entityManager;/sg' "$file"
+    perl -0777 -i -pe 's/private final EntityManager em;\s*public [A-Za-z0-9_]+\s*\(\s*EntityManager em\s*\)\s*\{\s*this\.em = em;\s*\}/\@PersistenceContext\n    private EntityManager em;/sg' "$file"
+    perl -0777 -i -pe 's/private final EntityManager manager;\s*public [A-Za-z0-9_]+\s*\(\s*EntityManager manager\s*\)\s*\{\s*this\.manager = manager;\s*\}/\@PersistenceContext\n    private EntityManager manager;/sg' "$file"
+  }
+
+  patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaOwnerRepositoryImpl.java
+  patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaPetRepositoryImpl.java
+  patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVetRepositoryImpl.java
+  patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVisitRepositoryImpl.java
+
   # Ensure legacy placeholder properties are concrete for CI test execution.
   if [[ -f src/main/resources/spring/data-access.properties ]]; then
     sed -i 's|^jdbc.driverClassName=.*|jdbc.driverClassName=org.h2.Driver|' src/main/resources/spring/data-access.properties
