@@ -102,7 +102,7 @@ EOF
       perl -0777 -i -pe "s/\\@Repository\\s*/\\@Repository\\n\\@Profile(\"$profile\")\\n/s" "$file"
       perl -0777 -i -pe "s/\\@Component\\s*/\\@Component\\n\\@Profile(\"$profile\")\\n/s" "$file"
       if ! grep -q "@Profile(\"$profile\")" "$file"; then
-        perl -0777 -i -pe "s/(public\\s+(class|interface)\\s+)/\\@Profile(\"$profile\")\\n$1/s" "$file"
+        perl -0777 -i -pe "s/(public\\s+(class|interface)\\s+)/\\@Profile(\"$profile\")\\n\$1/s" "$file"
       fi
     fi
   }
