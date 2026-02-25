@@ -49,8 +49,8 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
             planned.append("com.organization.catalog.JakartaEeModernization")
             planned.append("com.organization.catalog.JakartaAnnotationApi")
     else:
-        if not detected_boot.startswith("2.7.18"):
-            planned.append("com.organization.catalog.SpringBoot2Track")
+        planned.append("com.organization.catalog.SpringBoot2Track")
+        planned.append("com.organization.catalog.SpringBoot2Java11Cleanup")
         planned.append("com.organization.catalog.SpringBootDependencies_2_7")
 if flags.get("has_dropwizard"):
     planned.append(

@@ -46,6 +46,50 @@ recipeList:
   - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
 ---
 type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBoot2Java11Cleanup
+displayName: Spring Boot 2.7 Java 11 Cleanup
+description: Align a Java 11 Spring Boot 2.7 codebase by removing conflicting deps and modernizing tests/security.
+recipeList:
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.servlet
+      artifactId: javax.servlet-api
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.persistence
+      artifactId: javax.persistence-api
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.validation
+      artifactId: validation-api
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: javax.annotation
+      artifactId: javax.annotation-api
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.hibernate
+      artifactId: hibernate-core
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: junit
+      artifactId: junit
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: org.junit.vintage
+      artifactId: junit-vintage-engine
+  - org.openrewrite.maven.RemoveDependency:
+      groupId: jakarta.xml.bind
+      artifactId: jakarta.xml.bind-api
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.11.x
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-plugin
+      newVersion: 3.2.x
+  - org.openrewrite.java.spring.security5.UpgradeSpringSecurity_5_7
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: javax.transaction.Transactional
+      newFullyQualifiedTypeName: org.springframework.transaction.annotation.Transactional
+  - org.openrewrite.java.testing.junit5.JUnit4to5Migration
+  - org.openrewrite.java.testing.mockito.Mockito1to4Migration
+---
+type: specs.openrewrite.org/v1beta/recipe
 name: com.organization.catalog.SpringBoot3Core
 displayName: Spring Boot 3 Core Track
 description: Upgrade to Spring Boot 3 baseline for Java 17+.

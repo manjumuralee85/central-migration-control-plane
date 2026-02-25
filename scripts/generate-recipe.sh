@@ -51,10 +51,8 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
             selected.append("com.organization.catalog.JakartaEeModernization")
             selected.append("com.organization.catalog.JakartaAnnotationApi")
     else:
-        # Avoid unnecessary Spring Boot 2.x rewrite churn (including JUnit 4->5 migration)
-        # when repository is already on latest 2.7.18 for Java 11 track.
-        if not detected_boot.startswith("2.7.18"):
-            selected.append("com.organization.catalog.SpringBoot2Track")
+        selected.append("com.organization.catalog.SpringBoot2Track")
+        selected.append("com.organization.catalog.SpringBoot2Java11Cleanup")
         selected.append("com.organization.catalog.SpringBootDependencies_2_7")
 
 if flags.get("has_dropwizard"):
