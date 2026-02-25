@@ -22,6 +22,7 @@ on:
         default: "3.3.6"
         type: choice
         options:
+          - "2.7.18"
           - "3.2.12"
           - "3.3.6"
           - "3.4.2"
@@ -87,8 +88,11 @@ jobs:
         if: ${{ github.event.inputs.mode == 'direct_migrate' }}
         run: |
           set -euo pipefail
-          TARGET_BOOT='${{ github.event.inputs.spring_boot_version || matrix.spring_boot_version }}'
           TARGET_JAVA='${{ github.event.inputs.target_java_version || matrix.java_version || '21' }}'
+          TARGET_BOOT='${{ github.event.inputs.spring_boot_version || matrix.spring_boot_version }}'
+          if [[ "$TARGET_JAVA" -le 11 && "$TARGET_BOOT" =~ ^3\. ]]; then
+            TARGET_BOOT='${{ matrix.spring_boot_version || '2.7.18' }}'
+          fi
           PROFILE='${{ matrix.migration_profile }}'
           if [[ -z "$PROFILE" || "$PROFILE" == "null" ]]; then
             PROFILE=$(./scripts/detect-profile.sh target-repo)

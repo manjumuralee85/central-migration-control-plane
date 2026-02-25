@@ -7,6 +7,14 @@
       "migration_profile": "spring-petclinic",
       "java_version": "21",
       "spring_boot_version": "3.3.6"
+    },
+    {
+      "repo": "Java-Migration/jm-java8-boot-1",
+      "default_branch": "main",
+      "enabled": true,
+      "migration_profile": "generic-java-service",
+      "java_version": "11",
+      "spring_boot_version": "2.7.18"
     }
   ]
 }

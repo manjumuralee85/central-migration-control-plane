@@ -38,6 +38,7 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
         recipes.append("      overrideManagedVersion: true")
     else:
         # Keep Spring Boot on the Java-11-compatible line.
+        recipes.append("  - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7")
         recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
         recipes.append("      groupId: org.springframework.boot")
         recipes.append("      artifactId: spring-boot-dependencies")

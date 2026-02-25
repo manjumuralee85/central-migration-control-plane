@@ -39,6 +39,7 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
         planned.append("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1")
         planned.append(f"org.springframework.boot:spring-boot-dependencies -> {target_boot}")
     else:
+        planned.append("org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7")
         planned.append("org.springframework.boot:spring-boot-dependencies -> 2.7.x")
 if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
     planned.append("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
