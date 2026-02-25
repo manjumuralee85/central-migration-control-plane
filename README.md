@@ -1,6 +1,6 @@
 # Central Migration Control Plane
 
-This folder is a template for a dedicated central repository that can orchestrate Java 21 + Spring Boot migration across 50+ repos.
+This folder is a template for a dedicated central repository that can orchestrate Java migrations (11/17/21) plus framework/dependency modernization across 50+ repos.
 
 ## What it does
 
@@ -9,6 +9,7 @@ This folder is a template for a dedicated central repository that can orchestrat
   - Checks out each target repo directly from central workflow
   - Detects current Java/framework/dependency versions (Spring Boot, Dropwizard, Jakarta, Log4j, etc.)
   - Generates repository-specific OpenRewrite recipe config
+  - Generates a dependency analysis report artifact (`analysis.json` + markdown summary)
   - Applies migration profile patches plus OpenRewrite code/dependency upgrades
   - Runs build/tests
   - Creates PR in target repo with actual code changes
@@ -38,7 +39,7 @@ Edit `config/repos.json`:
       "default_branch": "main",
       "enabled": true,
       "migration_profile": "spring-petclinic",
-      "java_version": "21",
+      "java_version": "11",
       "spring_boot_version": "3.3.6"
     },
     {
@@ -62,6 +63,7 @@ You can add more repos as additional objects in the same array.
 3. Add secret `MIGRATION_BOT_TOKEN`.
 4. Run workflow `Migration Orchestrator`:
    - Recommended: `mode=direct_migrate` (no target-repo workflow required)
+   - Set `target_java_version` (11/17/21) for the migration goal
    - Optional: `mode=sync_templates` then `mode=trigger_migration`
 
 ## Notes
@@ -69,6 +71,7 @@ You can add more repos as additional objects in the same array.
 - Keep `templates/convert-to-spring-boot.yml` and `templates/migration-recipe.yml` as centralized sources.
 - Adding a new repo is only a config change in `config/repos.json`.
 - The central workflow now generates `.github/rewrite/migration-recipe.yml` per target repository using `scripts/analyze-repo.sh` + `scripts/generate-recipe.sh`.
-- The generated recipe includes Java 21 upgrade plus Spring Boot 3.1+ / Jakarta / common dependency updates when detected.
+- The generated recipe includes target Java upgrade plus Spring Boot / Dropwizard / Jakarta / common dependency updates when detected and compatible with target Java.
+- Each direct migration run publishes dependency analysis artifacts so you can inspect detected dependencies and planned upgrades before merging.
 - Migration logic per app family is defined by `migration_profile` and implemented in `scripts/migrate-repo.sh`.
 - Auto-detection is implemented in `scripts/detect-profile.sh`. If detection returns unsupported, add a specific `migration_profile` and corresponding migration logic.

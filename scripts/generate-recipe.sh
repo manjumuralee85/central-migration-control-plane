@@ -3,41 +3,55 @@ set -euo pipefail
 
 ANALYSIS_JSON="$1"
 TARGET_SPRING_BOOT_VERSION="${2:-3.3.6}"
-OUTPUT_RECIPE="${3:-.github/rewrite/migration-recipe.yml}"
+TARGET_JAVA_VERSION="${3:-21}"
+OUTPUT_RECIPE="${4:-.github/rewrite/migration-recipe.yml}"
 
-python3 - "$ANALYSIS_JSON" "$TARGET_SPRING_BOOT_VERSION" "$OUTPUT_RECIPE" << 'PY'
+python3 - "$ANALYSIS_JSON" "$TARGET_SPRING_BOOT_VERSION" "$TARGET_JAVA_VERSION" "$OUTPUT_RECIPE" << 'PY'
 import json
-import os
 import sys
 from pathlib import Path
 
 analysis_path = Path(sys.argv[1])
 target_boot = sys.argv[2]
-output_path = Path(sys.argv[3])
+target_java = int(sys.argv[3])
+output_path = Path(sys.argv[4])
 
 data = json.loads(analysis_path.read_text(encoding="utf-8"))
 flags = data.get("flags", {})
 
 recipes = []
-recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava21")
+if target_java >= 21:
+    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava21")
+elif target_java >= 17:
+    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava17")
+elif target_java >= 11:
+    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava11")
 
 if flags.get("has_spring") or flags.get("has_spring_boot"):
-    # Explicitly include the recipe family requested from OpenRewrite docs.
-    recipes.append("  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1")
-    recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-    recipes.append("      groupId: org.springframework.boot")
-    recipes.append("      artifactId: spring-boot-dependencies")
-    recipes.append(f"      newVersion: {target_boot}")
-    recipes.append("      overrideManagedVersion: true")
+    if target_java >= 17:
+        # Spring Boot 3.x requires Java 17+, so only apply this family for Java 17/21 migrations.
+        recipes.append("  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1")
+        recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
+        recipes.append("      groupId: org.springframework.boot")
+        recipes.append("      artifactId: spring-boot-dependencies")
+        recipes.append(f"      newVersion: {target_boot}")
+        recipes.append("      overrideManagedVersion: true")
+    else:
+        # Keep Spring Boot on the Java-11-compatible line.
+        recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
+        recipes.append("      groupId: org.springframework.boot")
+        recipes.append("      artifactId: spring-boot-dependencies")
+        recipes.append("      newVersion: 2.7.x")
+        recipes.append("      overrideManagedVersion: true")
 
-if flags.get("has_javax") and not flags.get("has_jakarta"):
+if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
     recipes.append("  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
 
 if flags.get("has_dropwizard"):
     recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
     recipes.append("      groupId: io.dropwizard")
     recipes.append("      artifactId: dropwizard-core")
-    recipes.append("      newVersion: 4.x")
+    recipes.append(f"      newVersion: {'4.x' if target_java >= 17 else '2.1.x'}")
     recipes.append("      overrideManagedVersion: true")
 
 if flags.get("has_log4j"):
