@@ -107,6 +107,27 @@ EOF
   patch_jdbc_repo_qualifiers src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcPetRepositoryImpl.java
   patch_jdbc_repo_qualifiers src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVisitRepositoryImpl.java
 
+  patch_clinic_service_qualifiers() {
+    local file="$1"
+    if [[ ! -f "$file" ]]; then
+      return 0
+    fi
+
+    if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
+      perl -i -pe 's|import org.springframework.stereotype.Service;\n|import org.springframework.stereotype.Service;\nimport org.springframework.beans.factory.annotation.Qualifier;\n|g' "$file"
+      if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
+        perl -i -pe 's|^(package [^;]+;\n)|$1\nimport org.springframework.beans.factory.annotation.Qualifier;\n|s' "$file"
+      fi
+    fi
+
+    perl -0777 -i -pe 's/\bPetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataPetRepository") PetRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bVetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataVetRepository") VetRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bOwnerRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataOwnerRepository") OwnerRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bVisitRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataVisitRepository") VisitRepository $1/g' "$file"
+  }
+
+  patch_clinic_service_qualifiers src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java
+
   # Ensure legacy placeholder properties are concrete for CI test execution.
   if [[ -f src/main/resources/spring/data-access.properties ]]; then
     sed -i 's|^jdbc.driverClassName=.*|jdbc.driverClassName=org.h2.Driver|' src/main/resources/spring/data-access.properties
