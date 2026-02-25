@@ -1,15 +1,131 @@
 type: specs.openrewrite.org/v1beta/recipe
-name: com.organization.migrations.Java21SpringBootBaseline
-displayName: Java 21 and Spring Boot baseline migration recipe
-description: Centralized baseline recipe applied across target repositories.
+name: com.organization.catalog.Java11Upgrade
+displayName: Java 11 Upgrade
+description: Upgrade source/target compatibility to Java 11.
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava11
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.Java17Upgrade
+displayName: Java 17 Upgrade
+description: Upgrade source/target compatibility to Java 17.
+recipeList:
+  - org.openrewrite.java.migrate.UpgradeToJava17
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.Java21Upgrade
+displayName: Java 21 Upgrade
+description: Upgrade source/target compatibility to Java 21.
 recipeList:
   - org.openrewrite.java.migrate.UpgradeToJava21
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBoot2Track
+displayName: Spring Boot 2.7 Track
+description: Keep Spring Boot on Java-11-compatible 2.7 line.
+recipeList:
+  - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBoot3Core
+displayName: Spring Boot 3 Core Track
+description: Upgrade to Spring Boot 3 baseline for Java 17+.
+recipeList:
   - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1
-  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBootDependencies_2_7
+displayName: Spring Boot Dependencies 2.7
+description: Align spring-boot-dependencies BOM to 2.7.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-dependencies
+      newVersion: 2.7.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBootDependencies_3_2
+displayName: Spring Boot Dependencies 3.2
+description: Align spring-boot-dependencies BOM to 3.2.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-dependencies
+      newVersion: 3.2.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBootDependencies_3_3
+displayName: Spring Boot Dependencies 3.3
+description: Align spring-boot-dependencies BOM to 3.3.x.
+recipeList:
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.springframework.boot
       artifactId: spring-boot-dependencies
       newVersion: 3.3.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.SpringBootDependencies_3_4
+displayName: Spring Boot Dependencies 3.4
+description: Align spring-boot-dependencies BOM to 3.4.x.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-dependencies
+      newVersion: 3.4.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.JavaxToJakarta
+displayName: Javax to Jakarta Namespace Migration
+description: Migrate javax namespace usages to jakarta for modern stacks.
+recipeList:
+  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.DropwizardJava11Track
+displayName: Dropwizard Java 11 Track
+description: Keep Dropwizard on Java 11 compatible line.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.dropwizard
+      artifactId: dropwizard-core
+      newVersion: 2.1.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.DropwizardModernTrack
+displayName: Dropwizard Modern Track
+description: Upgrade Dropwizard to modern line for Java 17+.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: io.dropwizard
+      artifactId: dropwizard-core
+      newVersion: 4.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.Log4jModernization
+displayName: Log4j Modernization
+description: Upgrade log4j api to stable modern line.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.apache.logging.log4j
+      artifactId: log4j-api
+      newVersion: 2.25.x
+      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.catalog.CommonDependencyModernization
+displayName: Common Dependency Modernization
+description: Upgrade commonly used drivers/runtime libraries.
+recipeList:
+  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
+      groupId: org.postgresql
+      artifactId: postgresql
+      newVersion: 42.7.x
       overrideManagedVersion: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: com.mysql
@@ -17,32 +133,23 @@ recipeList:
       newVersion: 8.4.x
       overrideManagedVersion: true
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.postgresql
-      artifactId: postgresql
-      newVersion: 42.7.x
-      overrideManagedVersion: true
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.hibernate.validator
-      artifactId: hibernate-validator
-      newVersion: latest.release
-      overrideManagedVersion: true
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: org.eclipse.angus
       artifactId: angus-activation
-      newVersion: latest.release
+      newVersion: 2.0.x
       overrideManagedVersion: true
-  - org.openrewrite.maven.AddDependency:
-      groupId: org.eclipse.angus
-      artifactId: angus-activation
-      version: latest.release
-      scope: runtime
   - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
       groupId: ch.qos.logback
       artifactId: logback-classic
       newVersion: 1.5.x
       overrideManagedVersion: true
-  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:
-      groupId: org.webjars
-      artifactId: bootstrap
-      newVersion: 5.3.x
-      overrideManagedVersion: true
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.organization.migrations.Java21SpringBootBaseline
+displayName: Java 21 and Spring Boot baseline migration recipe
+description: Backward-compatible baseline recipe retained for template workflow usage.
+recipeList:
+  - com.organization.catalog.Java21Upgrade
+  - com.organization.catalog.SpringBoot3Core
+  - com.organization.catalog.SpringBootDependencies_3_3
+  - com.organization.catalog.JavaxToJakarta
+  - com.organization.catalog.CommonDependencyModernization
