@@ -156,6 +156,26 @@ EOF
   normalize_self_referential_data_access
 fi
 
+if [[ "$PROFILE" == "generic-java-service" ]]; then
+  patch_mockmvc_csrf_tests() {
+    local file="$1"
+    [[ -f "$file" ]] || return 0
+
+    # Add csrf() to state-changing MockMvc requests that started failing with 403 after security upgrades.
+    perl -0777 -i -pe 's/perform\(\s*(post|put|patch|delete)\(([^()]*)\)\s*\)/perform($1($2).with(csrf()))/g' "$file"
+
+    if grep -q '\.with(csrf())' "$file" && ! grep -q 'SecurityMockMvcRequestPostProcessors\.csrf' "$file"; then
+      perl -i -pe 's|^(package [^;]+;\n)|$1\nimport static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;\n|s' "$file"
+    fi
+  }
+
+  if [[ -d src/test/java ]]; then
+    while IFS= read -r test_file; do
+      patch_mockmvc_csrf_tests "$test_file"
+    done < <(find src/test/java -type f -name "*Test.java")
+  fi
+fi
+
 rm -rf .rewrite rewrite.patch || true
 
 if [[ -f "pom.xml" ]]; then
