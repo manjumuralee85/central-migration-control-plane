@@ -20,6 +20,7 @@ catalog_path = Path(sys.argv[5])
 
 data = json.loads(analysis_path.read_text(encoding="utf-8"))
 flags = data.get("flags", {})
+detected_boot = str(data.get("spring_boot_version") or "").strip()
 
 selected = []
 if target_java >= 21:
@@ -45,12 +46,16 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
     if target_java >= 17:
         selected.append("com.organization.catalog.SpringBoot3Core")
         selected.append(spring_boot_dependency_recipe(target_boot))
+        if flags.get("has_javax") or flags.get("has_jakarta"):
+            selected.append("com.organization.catalog.JavaxToJakarta")
+            selected.append("com.organization.catalog.JakartaEeModernization")
+            selected.append("com.organization.catalog.JakartaAnnotationApi")
     else:
-        selected.append("com.organization.catalog.SpringBoot2Track")
+        # Avoid unnecessary Spring Boot 2.x rewrite churn (including JUnit 4->5 migration)
+        # when repository is already on latest 2.7.18 for Java 11 track.
+        if not detected_boot.startswith("2.7.18"):
+            selected.append("com.organization.catalog.SpringBoot2Track")
         selected.append("com.organization.catalog.SpringBootDependencies_2_7")
-
-if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
-    selected.append("com.organization.catalog.JavaxToJakarta")
 
 if flags.get("has_dropwizard"):
     selected.append(

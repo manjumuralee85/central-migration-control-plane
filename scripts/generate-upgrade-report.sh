@@ -19,6 +19,7 @@ output_path = Path(sys.argv[4])
 data = json.loads(analysis_path.read_text(encoding="utf-8"))
 flags = data.get("flags", {})
 deps = data.get("dependencies", [])
+detected_boot = str(data.get("spring_boot_version") or "").strip()
 
 def add(lines, text=""):
     lines.append(text)
@@ -43,11 +44,14 @@ if flags.get("has_spring") or flags.get("has_spring_boot"):
             planned.append("com.organization.catalog.SpringBootDependencies_3_2")
         else:
             planned.append("com.organization.catalog.SpringBootDependencies_3_3")
+        if flags.get("has_javax") or flags.get("has_jakarta"):
+            planned.append("com.organization.catalog.JavaxToJakarta")
+            planned.append("com.organization.catalog.JakartaEeModernization")
+            planned.append("com.organization.catalog.JakartaAnnotationApi")
     else:
-        planned.append("com.organization.catalog.SpringBoot2Track")
+        if not detected_boot.startswith("2.7.18"):
+            planned.append("com.organization.catalog.SpringBoot2Track")
         planned.append("com.organization.catalog.SpringBootDependencies_2_7")
-if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
-    planned.append("com.organization.catalog.JavaxToJakarta")
 if flags.get("has_dropwizard"):
     planned.append(
         "com.organization.catalog.DropwizardModernTrack"
