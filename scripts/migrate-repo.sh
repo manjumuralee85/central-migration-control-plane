@@ -120,10 +120,10 @@ EOF
       fi
     fi
 
-    perl -0777 -i -pe 's/\bPetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataPetRepository") PetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataVetRepository") VetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bOwnerRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataOwnerRepository") OwnerRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVisitRepository\s+([A-Za-z0-9_]+)/\@Qualifier("springDataVisitRepository") VisitRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bPetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcPetRepositoryImpl") PetRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bVetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVetRepositoryImpl") VetRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bOwnerRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcOwnerRepositoryImpl") OwnerRepository $1/g' "$file"
+    perl -0777 -i -pe 's/\bVisitRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVisitRepositoryImpl") VisitRepository $1/g' "$file"
   }
 
   patch_clinic_service_qualifiers src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java
