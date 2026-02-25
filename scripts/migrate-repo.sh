@@ -85,48 +85,56 @@ EOF
   patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVetRepositoryImpl.java
   patch_jpa_repo src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVisitRepositoryImpl.java
 
-  patch_jdbc_repo_qualifiers() {
+  patch_profile_annotation() {
     local file="$1"
+    local profile="$2"
     if [[ ! -f "$file" ]]; then
       return 0
     fi
 
-    if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
-      perl -i -pe 's|import org.springframework.beans.factory.annotation.Autowired;\n|import org.springframework.beans.factory.annotation.Autowired;\nimport org.springframework.beans.factory.annotation.Qualifier;\n|g' "$file"
-      if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
-        perl -i -pe 's|^(package [^;]+;\n)|$1\nimport org.springframework.beans.factory.annotation.Qualifier;\n|s' "$file"
-      fi
+    if ! grep -q 'import org.springframework.context.annotation.Profile;' "$file"; then
+      perl -i -pe 's|import org.springframework.stereotype.Repository;\n|import org.springframework.stereotype.Repository;\nimport org.springframework.context.annotation.Profile;\n|g' "$file"
+      perl -i -pe 's|import org.springframework.stereotype.Component;\n|import org.springframework.stereotype.Component;\nimport org.springframework.context.annotation.Profile;\n|g' "$file"
+      perl -i -pe 's|^(package [^;]+;\n)|$1\nimport org.springframework.context.annotation.Profile;\n|s' "$file"
     fi
 
-    perl -0777 -i -pe 's/\bOwnerRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcOwnerRepositoryImpl") OwnerRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bPetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcPetRepositoryImpl") PetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVetRepositoryImpl") VetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVisitRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVisitRepositoryImpl") VisitRepository $1/g' "$file"
+    if ! grep -q "@Profile(\"$profile\")" "$file"; then
+      perl -0777 -i -pe "s/\\@Repository\\s*/\\@Repository\\n\\@Profile(\"$profile\")\\n/s" "$file"
+      perl -0777 -i -pe "s/\\@Component\\s*/\\@Component\\n\\@Profile(\"$profile\")\\n/s" "$file"
+      if ! grep -q "@Profile(\"$profile\")" "$file"; then
+        perl -0777 -i -pe "s/(public\\s+(class|interface)\\s+)/\\@Profile(\"$profile\")\\n$1/s" "$file"
+      fi
+    fi
   }
 
-  patch_jdbc_repo_qualifiers src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcPetRepositoryImpl.java
-  patch_jdbc_repo_qualifiers src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVisitRepositoryImpl.java
-
-  patch_clinic_service_qualifiers() {
+  patch_clinic_service_remove_qualifiers() {
     local file="$1"
     if [[ ! -f "$file" ]]; then
       return 0
     fi
-
-    if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
-      perl -i -pe 's|import org.springframework.stereotype.Service;\n|import org.springframework.stereotype.Service;\nimport org.springframework.beans.factory.annotation.Qualifier;\n|g' "$file"
-      if ! grep -q 'import org.springframework.beans.factory.annotation.Qualifier;' "$file"; then
-        perl -i -pe 's|^(package [^;]+;\n)|$1\nimport org.springframework.beans.factory.annotation.Qualifier;\n|s' "$file"
-      fi
-    fi
-
-    perl -0777 -i -pe 's/\bPetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcPetRepositoryImpl") PetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVetRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVetRepositoryImpl") VetRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bOwnerRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcOwnerRepositoryImpl") OwnerRepository $1/g' "$file"
-    perl -0777 -i -pe 's/\bVisitRepository\s+([A-Za-z0-9_]+)/\@Qualifier("jdbcVisitRepositoryImpl") VisitRepository $1/g' "$file"
+    perl -i -pe 's/^import org\.springframework\.beans\.factory\.annotation\.Qualifier;\n//g' "$file"
+    perl -0777 -i -pe 's/\@Qualifier\("jdbcPetRepositoryImpl"\)\s*//g' "$file"
+    perl -0777 -i -pe 's/\@Qualifier\("jdbcVetRepositoryImpl"\)\s*//g' "$file"
+    perl -0777 -i -pe 's/\@Qualifier\("jdbcOwnerRepositoryImpl"\)\s*//g' "$file"
+    perl -0777 -i -pe 's/\@Qualifier\("jdbcVisitRepositoryImpl"\)\s*//g' "$file"
   }
 
-  patch_clinic_service_qualifiers src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcOwnerRepositoryImpl.java jdbc
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcPetRepositoryImpl.java jdbc
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVetRepositoryImpl.java jdbc
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jdbc/JdbcVisitRepositoryImpl.java jdbc
+
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaOwnerRepositoryImpl.java jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaPetRepositoryImpl.java jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVetRepositoryImpl.java jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/jpa/JpaVisitRepositoryImpl.java jpa
+
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/springdatajpa/SpringDataOwnerRepository.java spring-data-jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/springdatajpa/SpringDataPetRepository.java spring-data-jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/springdatajpa/SpringDataVetRepository.java spring-data-jpa
+  patch_profile_annotation src/main/java/org/springframework/samples/petclinic/repository/springdatajpa/SpringDataVisitRepository.java spring-data-jpa
+
+  patch_clinic_service_remove_qualifiers src/main/java/org/springframework/samples/petclinic/service/ClinicServiceImpl.java
 
   # Ensure legacy placeholder properties are concrete for CI test execution.
   if [[ -f src/main/resources/spring/data-access.properties ]]; then
@@ -146,6 +154,10 @@ EOF
     grep -q '^jdbc.password=' src/main/resources/spring/data-access.properties || echo 'jdbc.password=' >> src/main/resources/spring/data-access.properties
     grep -q '^jpa.database=' src/main/resources/spring/data-access.properties || echo 'jpa.database=H2' >> src/main/resources/spring/data-access.properties
     grep -q '^db.script=' src/main/resources/spring/data-access.properties || echo 'db.script=h2' >> src/main/resources/spring/data-access.properties
+  fi
+
+  if [[ -f src/main/resources/application.properties ]] && ! grep -q '^spring.profiles.default=' src/main/resources/application.properties; then
+    echo "spring.profiles.default=jdbc" >> src/main/resources/application.properties
   fi
 fi
 
