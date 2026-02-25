@@ -157,6 +157,24 @@ EOF
 fi
 
 if [[ "$PROFILE" == "generic-java-service" ]]; then
+  patch_webmvctest_disable_filters() {
+    local file="$1"
+    [[ -f "$file" ]] || return 0
+    grep -q "@WebMvcTest" "$file" || return 0
+
+    if grep -q "@AutoConfigureMockMvc" "$file"; then
+      # Upgrade existing annotation to disable security filters in focused web-layer tests.
+      perl -0777 -i -pe 's/\@AutoConfigureMockMvc\s*(\(\s*\))?/\@AutoConfigureMockMvc(addFilters = false)/g' "$file"
+    else
+      # Insert annotation alongside @WebMvcTest.
+      perl -0777 -i -pe 's/\@WebMvcTest([^\n]*)/\@WebMvcTest$1\n\@AutoConfigureMockMvc(addFilters = false)/g' "$file"
+    fi
+
+    if grep -q "@AutoConfigureMockMvc" "$file" && ! grep -q 'import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;' "$file"; then
+      perl -i -pe 's|^(package [^;]+;\n)|$1\nimport org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;\n|s' "$file"
+    fi
+  }
+
   patch_mockmvc_csrf_tests() {
     local file="$1"
     [[ -f "$file" ]] || return 0
@@ -171,6 +189,7 @@ if [[ "$PROFILE" == "generic-java-service" ]]; then
 
   if [[ -d src/test/java ]]; then
     while IFS= read -r test_file; do
+      patch_webmvctest_disable_filters "$test_file"
       patch_mockmvc_csrf_tests "$test_file"
     done < <(find src/test/java -type f -name "*Test.java")
   fi
