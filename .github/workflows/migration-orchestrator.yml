@@ -66,6 +66,31 @@ jobs:
       - name: Checkout control plane repo
         uses: actions/checkout@v4
 
+      - name: Validate target repository access
+        if: ${{ github.event.inputs.mode == 'direct_migrate' }}
+        env:
+          GH_TOKEN: ${{ secrets.MIGRATION_BOT_TOKEN }}
+        run: |
+          set -euo pipefail
+          REPO='${{ matrix.repo }}'
+          if ! gh api "/repos/${REPO}" >/tmp/repo-access.json 2>/tmp/repo-access.err; then
+            echo "Failed to access ${REPO} with MIGRATION_BOT_TOKEN."
+            cat /tmp/repo-access.err || true
+            echo "Ensure the token has repository access (contents:read at minimum, and write for PR branch push)."
+            exit 1
+          fi
+          CAN_PUSH=$(jq -r '.permissions.push // false' /tmp/repo-access.json)
+          CAN_PULL=$(jq -r '.permissions.pull // false' /tmp/repo-access.json)
+          if [[ "$CAN_PULL" != "true" ]]; then
+            echo "Token cannot read ${REPO} (permissions.pull=false)."
+            exit 1
+          fi
+          if [[ "$CAN_PUSH" != "true" ]]; then
+            echo "Token can read ${REPO} but cannot push (permissions.push=false)."
+            echo "Direct migration PR creation requires write access to target repo."
+            exit 1
+          fi
+
       - name: Checkout target repository
         if: ${{ github.event.inputs.mode == 'direct_migrate' }}
         uses: actions/checkout@v4

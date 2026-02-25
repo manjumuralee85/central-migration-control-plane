@@ -72,6 +72,7 @@ You can add more repos as additional objects in the same array.
 - Adding a new repo is only a config change in `config/repos.json`.
 - The central workflow now generates `.github/rewrite/migration-recipe.yml` per target repository using `scripts/analyze-repo.sh` + `scripts/generate-recipe.sh`.
 - The generated recipe includes target Java upgrade plus Spring Boot / Dropwizard / Jakarta / common dependency updates when detected and compatible with target Java.
+- Centralized reusable OpenRewrite recipe blocks are maintained in `templates/migration-recipe.yml` (catalog), while `generate-recipe.sh` only composes per-repo selector recipes from that catalog.
 - Each direct migration run publishes dependency analysis artifacts so you can inspect detected dependencies and planned upgrades before merging.
 - Migration logic per app family is defined by `migration_profile` and implemented in `scripts/migrate-repo.sh`.
 - Auto-detection is implemented in `scripts/detect-profile.sh`. If detection returns unsupported, add a specific `migration_profile` and corresponding migration logic.

@@ -24,11 +24,11 @@ def add(lines, text=""):
     lines.append(text)
 
 target_java_recipe = (
-    "org.openrewrite.java.migrate.UpgradeToJava21"
+    "com.organization.catalog.Java21Upgrade"
     if target_java >= 21 else
-    "org.openrewrite.java.migrate.UpgradeToJava17"
+    "com.organization.catalog.Java17Upgrade"
     if target_java >= 17 else
-    "org.openrewrite.java.migrate.UpgradeToJava11"
+    "com.organization.catalog.Java11Upgrade"
     if target_java >= 11 else
     "(none)"
 )
@@ -36,23 +36,27 @@ target_java_recipe = (
 planned = [target_java_recipe]
 if flags.get("has_spring") or flags.get("has_spring_boot"):
     if target_java >= 17:
-        planned.append("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1")
-        planned.append(f"org.springframework.boot:spring-boot-dependencies -> {target_boot}")
+        planned.append("com.organization.catalog.SpringBoot3Core")
+        if target_boot.startswith("3.4"):
+            planned.append("com.organization.catalog.SpringBootDependencies_3_4")
+        elif target_boot.startswith("3.2"):
+            planned.append("com.organization.catalog.SpringBootDependencies_3_2")
+        else:
+            planned.append("com.organization.catalog.SpringBootDependencies_3_3")
     else:
-        planned.append("org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7")
-        planned.append("org.springframework.boot:spring-boot-dependencies -> 2.7.x")
+        planned.append("com.organization.catalog.SpringBoot2Track")
+        planned.append("com.organization.catalog.SpringBootDependencies_2_7")
 if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
-    planned.append("org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+    planned.append("com.organization.catalog.JavaxToJakarta")
 if flags.get("has_dropwizard"):
-    planned.append(f"io.dropwizard:dropwizard-core -> {'4.x' if target_java >= 17 else '2.1.x'}")
+    planned.append(
+        "com.organization.catalog.DropwizardModernTrack"
+        if target_java >= 17 else
+        "com.organization.catalog.DropwizardJava11Track"
+    )
 if flags.get("has_log4j"):
-    planned.append("org.apache.logging.log4j:log4j-api -> 2.25.x")
-planned.extend([
-    "org.postgresql:postgresql -> 42.7.x",
-    "com.mysql:mysql-connector-j -> 8.4.x",
-    "org.eclipse.angus:angus-activation -> 2.0.x",
-    "ch.qos.logback:logback-classic -> 1.5.x",
-])
+    planned.append("com.organization.catalog.Log4jModernization")
+planned.append("com.organization.catalog.CommonDependencyModernization")
 
 lines = []
 add(lines, "# Migration Dependency Analysis")

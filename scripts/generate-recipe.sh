@@ -5,8 +5,9 @@ ANALYSIS_JSON="$1"
 TARGET_SPRING_BOOT_VERSION="${2:-3.3.6}"
 TARGET_JAVA_VERSION="${3:-21}"
 OUTPUT_RECIPE="${4:-.github/rewrite/migration-recipe.yml}"
+CATALOG_RECIPE="${5:-templates/migration-recipe.yml}"
 
-python3 - "$ANALYSIS_JSON" "$TARGET_SPRING_BOOT_VERSION" "$TARGET_JAVA_VERSION" "$OUTPUT_RECIPE" << 'PY'
+python3 - "$ANALYSIS_JSON" "$TARGET_SPRING_BOOT_VERSION" "$TARGET_JAVA_VERSION" "$OUTPUT_RECIPE" "$CATALOG_RECIPE" << 'PY'
 import json
 import sys
 from pathlib import Path
@@ -15,83 +16,69 @@ analysis_path = Path(sys.argv[1])
 target_boot = sys.argv[2]
 target_java = int(sys.argv[3])
 output_path = Path(sys.argv[4])
+catalog_path = Path(sys.argv[5])
 
 data = json.loads(analysis_path.read_text(encoding="utf-8"))
 flags = data.get("flags", {})
 
-recipes = []
+selected = []
 if target_java >= 21:
-    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava21")
+    selected.append("com.organization.catalog.Java21Upgrade")
 elif target_java >= 17:
-    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava17")
+    selected.append("com.organization.catalog.Java17Upgrade")
 elif target_java >= 11:
-    recipes.append("  - org.openrewrite.java.migrate.UpgradeToJava11")
+    selected.append("com.organization.catalog.Java11Upgrade")
+
+def spring_boot_dependency_recipe(version: str) -> str:
+    if version.startswith("3.4"):
+        return "com.organization.catalog.SpringBootDependencies_3_4"
+    if version.startswith("3.2"):
+        return "com.organization.catalog.SpringBootDependencies_3_2"
+    if version.startswith("3.3"):
+        return "com.organization.catalog.SpringBootDependencies_3_3"
+    # Fallback for any 3.x not explicitly mapped.
+    if version.startswith("3."):
+        return "com.organization.catalog.SpringBootDependencies_3_3"
+    return "com.organization.catalog.SpringBootDependencies_2_7"
 
 if flags.get("has_spring") or flags.get("has_spring_boot"):
     if target_java >= 17:
-        # Spring Boot 3.x requires Java 17+, so only apply this family for Java 17/21 migrations.
-        recipes.append("  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1")
-        recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-        recipes.append("      groupId: org.springframework.boot")
-        recipes.append("      artifactId: spring-boot-dependencies")
-        recipes.append(f"      newVersion: {target_boot}")
-        recipes.append("      overrideManagedVersion: true")
+        selected.append("com.organization.catalog.SpringBoot3Core")
+        selected.append(spring_boot_dependency_recipe(target_boot))
     else:
-        # Keep Spring Boot on the Java-11-compatible line.
-        recipes.append("  - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7")
-        recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-        recipes.append("      groupId: org.springframework.boot")
-        recipes.append("      artifactId: spring-boot-dependencies")
-        recipes.append("      newVersion: 2.7.x")
-        recipes.append("      overrideManagedVersion: true")
+        selected.append("com.organization.catalog.SpringBoot2Track")
+        selected.append("com.organization.catalog.SpringBootDependencies_2_7")
 
 if target_java >= 17 and flags.get("has_javax") and not flags.get("has_jakarta"):
-    recipes.append("  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta")
+    selected.append("com.organization.catalog.JavaxToJakarta")
 
 if flags.get("has_dropwizard"):
-    recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-    recipes.append("      groupId: io.dropwizard")
-    recipes.append("      artifactId: dropwizard-core")
-    recipes.append(f"      newVersion: {'4.x' if target_java >= 17 else '2.1.x'}")
-    recipes.append("      overrideManagedVersion: true")
+    selected.append(
+        "com.organization.catalog.DropwizardModernTrack"
+        if target_java >= 17 else
+        "com.organization.catalog.DropwizardJava11Track"
+    )
 
 if flags.get("has_log4j"):
-    recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-    recipes.append("      groupId: org.apache.logging.log4j")
-    recipes.append("      artifactId: log4j-api")
-    recipes.append("      newVersion: 2.25.x")
-    recipes.append("      overrideManagedVersion: true")
+    selected.append("com.organization.catalog.Log4jModernization")
 
-# Keep these runtime/security-sensitive libraries aligned for modern Spring Boot + Java 21 stacks.
-recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-recipes.append("      groupId: org.postgresql")
-recipes.append("      artifactId: postgresql")
-recipes.append("      newVersion: 42.7.x")
-recipes.append("      overrideManagedVersion: true")
-recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-recipes.append("      groupId: com.mysql")
-recipes.append("      artifactId: mysql-connector-j")
-recipes.append("      newVersion: 8.4.x")
-recipes.append("      overrideManagedVersion: true")
-recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-recipes.append("      groupId: org.eclipse.angus")
-recipes.append("      artifactId: angus-activation")
-recipes.append("      newVersion: 2.0.x")
-recipes.append("      overrideManagedVersion: true")
-recipes.append("  - org.openrewrite.java.dependencies.UpgradeDependencyVersion:")
-recipes.append("      groupId: ch.qos.logback")
-recipes.append("      artifactId: logback-classic")
-recipes.append("      newVersion: 1.5.x")
-recipes.append("      overrideManagedVersion: true")
+selected.append("com.organization.catalog.CommonDependencyModernization")
+
+# Deduplicate while preserving order.
+selected = list(dict.fromkeys(selected))
 
 output_path.parent.mkdir(parents=True, exist_ok=True)
-content = [
+composed = [
     "type: specs.openrewrite.org/v1beta/recipe",
     "name: com.organization.migrations.AutogeneratedMigration",
     "displayName: Autogenerated migration recipe",
-    "description: Generated per-repository from detected dependencies and framework versions.",
+    "description: Generated per-repository selector recipe composed from centralized catalog recipes.",
     "recipeList:",
 ]
-content.extend(recipes)
-output_path.write_text("\n".join(content) + "\n", encoding="utf-8")
+for name in selected:
+    composed.append(f"  - {name}")
+
+catalog = catalog_path.read_text(encoding="utf-8").rstrip()
+output = catalog + "\n---\n" + "\n".join(composed) + "\n"
+output_path.write_text(output, encoding="utf-8")
 PY
