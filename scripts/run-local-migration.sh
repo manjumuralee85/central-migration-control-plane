@@ -118,7 +118,7 @@ REPORT_FILE="$TARGET_REPO_PATH/.github/rewrite/dependency-upgrade-report.md"
 "$CONTROL_PLANE_DIR/scripts/analyze-repo.sh" "$TARGET_REPO_PATH" > "$ANALYSIS_FILE"
 "$CONTROL_PLANE_DIR/scripts/generate-recipe.sh" "$ANALYSIS_FILE" "$TARGET_BOOT_VERSION" "$TARGET_JAVA_VERSION" "$RECIPE_FILE" "$CONTROL_PLANE_DIR/templates/migration-recipe.yml"
 "$CONTROL_PLANE_DIR/scripts/generate-upgrade-report.sh" "$ANALYSIS_FILE" "$TARGET_BOOT_VERSION" "$TARGET_JAVA_VERSION" "$REPORT_FILE"
-"$CONTROL_PLANE_DIR/scripts/migrate-repo.sh" "$TARGET_REPO_PATH" "$PROFILE" "$TARGET_BOOT_VERSION" "$CONTROL_PLANE_DIR" "$ANALYSIS_FILE"
+"$CONTROL_PLANE_DIR/scripts/migrate-repo.sh" "$TARGET_REPO_PATH" "$PROFILE" "$TARGET_BOOT_VERSION" "$CONTROL_PLANE_DIR" "$ANALYSIS_FILE" "$TARGET_JAVA_VERSION"
 
 echo
 echo "Local migration completed."

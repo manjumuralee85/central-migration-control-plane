@@ -144,7 +144,8 @@ jobs:
             "$PROFILE" \
             "$TARGET_BOOT" \
             "$GITHUB_WORKSPACE" \
-            "target-repo/.github/rewrite/analysis.json"
+            "target-repo/.github/rewrite/analysis.json" \
+            "$TARGET_JAVA"
 
       - name: Upload dependency analysis artifact
         if: ${{ github.event.inputs.mode == 'direct_migrate' }}
