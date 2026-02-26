@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+dg2=;;;#!/usr/bin/env bash
 set -euo pipefail
 
 REPO_DIR="$1"

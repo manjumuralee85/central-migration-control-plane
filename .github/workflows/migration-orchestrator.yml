@@ -164,10 +164,12 @@ jobs:
           git -C target-repo restore --source=HEAD --worktree --staged -- target || true
           git -C target-repo restore --source=HEAD --worktree --staged -- .rewrite || true
           git -C target-repo restore --source=HEAD --worktree --staged -- .github/workflows || true
+          git -C target-repo restore --source=HEAD --worktree --staged -- .github/rewrite || true
 
           # Remove transient generated files that should never be part of PRs.
           rm -rf target-repo/target target-repo/.rewrite
           git -C target-repo clean -fd -- target .rewrite || true
+          rm -rf target-repo/.github/rewrite
           rm -f target-repo/.github/rewrite/analysis.json
           rm -f target-repo/.github/rewrite/dependency-upgrade-report.md
           find target-repo -type f -name "*.class" -delete
@@ -203,10 +205,6 @@ jobs:
             automation
             java-migration
             spring-boot
-          add-paths: |
-            pom.xml
-            src/main/**
-            src/test/**
 
       - name: Sync migration templates to target repository
         if: ${{ github.event.inputs.mode == 'sync_templates' }}

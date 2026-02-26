@@ -20,7 +20,6 @@ catalog_path = Path(sys.argv[5])
 
 data = json.loads(analysis_path.read_text(encoding="utf-8"))
 flags = data.get("flags", {})
-detected_boot = str(data.get("spring_boot_version") or "").strip()
 
 selected = []
 if target_java >= 21:

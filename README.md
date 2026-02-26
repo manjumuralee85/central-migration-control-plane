@@ -66,6 +66,31 @@ You can add more repos as additional objects in the same array.
    - Set `target_java_version` (11/17/21) for the migration goal
    - Optional: `mode=sync_templates` then `mode=trigger_migration`
 
+## Run Locally (No GitHub Actions)
+
+You can execute the same migration logic locally against a local target repository.
+
+Prerequisites:
+- Java + Maven/Gradle installed locally
+- network access for Maven dependencies/OpenRewrite artifacts
+
+Command:
+
+```bash
+./scripts/run-local-migration.sh \
+  --target-repo-path /absolute/path/to/target-repo \
+  --java-version 11 \
+  --spring-boot-version 2.7.18
+```
+
+Optional:
+- `--profile spring-petclinic` (or another profile)
+- `--control-plane-dir /absolute/path/to/central-migration-control-plane`
+
+After run:
+- inspect target repo changes with `git status` / `git diff`
+- review generated analysis/recipe/report under `target-repo/.github/rewrite/`
+
 ## Notes
 
 - Keep `templates/convert-to-spring-boot.yml` and `templates/migration-recipe.yml` as centralized sources.
